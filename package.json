@@ -1,0 +1,29 @@
+{
+  "name": "swat-db",
+  "version": "0.0.1",
+  "description": "CouchDB nano database interface for SWAT based applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ericlowry/swat-db.git"
+  },
+  "keywords": [
+    "couch",
+    "couchdb",
+    "nano",
+    "db",
+    "swat"
+  ],
+  "author": "Eric Lowry <eric@myrealms.org>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ericlowry/swat-db/issues"
+  },
+  "homepage": "https://github.com/ericlowry/swat-db#readme",
+  "dependencies": {
+    "nano": "^8.2.2"
+  }
+}
