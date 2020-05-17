@@ -3,38 +3,53 @@
 //
 
 const assert = require('assert');
-const url = require('url');
 const nano = require('nano');
 
 //
-// db(host, {user, password, name})
+// dbUrl(url, {userName, password, dbName}) - construct a couchdb url
+//
+function dbUrl(url, override = {}) {
+  assert(url && typeof url === 'string');
+  const { protocol, username, password, host, pathname } = new URL(url);
+  return (
+    protocol +
+    '//' +
+    (override.userName || username) +
+    ':' +
+    (override.password || password) +
+    '@' +
+    host +
+    (override.dbName ? `/${override.dbName}` : pathname)
+  );
+}
+
+//
+// db(host, {userName, password, dbName})
 //
 // Note: options take precedence over host URL settings
 //
-function db(host, opts = {}) {
-  assert(host && typeof host === 'string');
-  
-  const { protocol: dbProtocol, host: dbHost, auth, path } = url.parse(host);
-
-  const dbAuth =
-    opts.user && opts.password
-      ? `${opts.user}:${opts.password}@`
-      : auth
-      ? `${auth}@`
-      : '';
-
-  const dbName = opts.name ? `/${opts.name}` : path;
-
-  const url = dbProtocol + dbAuth + dbHost + dbName;
-
-  return nano(url);
+function db(url, override) {
+  return nano(dbUrl(url, override));
 }
 
+//
+// dbName(db) - return the collection name of the db
+//
 function dbName(db) {
   return db.config.db;
 }
 
+//
+// dbOrigin(db) - return a log file safe db url (no user/password)
+//
+function dbOrigin(db) {
+  const { origin } = new URL(db.config.url);
+  return `${origin}/${db.config.db}`;
+}
+
 module.exports = {
   db,
-  dbName: db => db.config.db,
+  dbUrl,
+  dbName,
+  dbOrigin,
 };
