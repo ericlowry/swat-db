@@ -47,9 +47,34 @@ function dbOrigin(db) {
   return `${origin}/${db.config.db}`;
 }
 
+//
+// ensureDB(db, name, opts) - make sure a db collection exists
+//
+//
+function ensureDB(nano, name, opts = { partitioned: false }) {
+  return nano.db
+    .create(name, opts)
+    .then(() => {
+      // collection created!
+      return nano.use(name);
+    })
+    .catch(err => {
+      if (err.statusCode !== 412) throw err; // re-throw the unexpected error
+      const db = nano.use(name);
+      return db.info().then(({ props }) => {
+        if (opts.partitioned && !props.partitioned)
+          throw `db '${name}' exists but is NOT partitioned`;
+        if (!opts.partitioned && props.partitioned)
+          throw `db '${name}' exists but is partitioned`;
+        return db;
+      });
+    });
+}
+
 module.exports = {
   db,
   dbUrl,
   dbName,
   dbOrigin,
+  ensureDB,
 };
