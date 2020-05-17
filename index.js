@@ -2,6 +2,7 @@
 // swat-db - common db routines for SWAT based applications
 //
 
+const assert = require('assert');
 const url = require('url');
 const nano = require('nano');
 
@@ -10,8 +11,10 @@ const nano = require('nano');
 //
 // Note: options take precedence over host URL settings
 //
-function db(host, opts) {
-  const { protocol: dbProtocol, host: dbHost, auth, name } = host;
+function db(host, opts = {}) {
+  assert(host && typeof host === 'string');
+  
+  const { protocol: dbProtocol, host: dbHost, auth, path } = url.parse(host);
 
   const dbAuth =
     opts.user && opts.password
@@ -27,8 +30,8 @@ function db(host, opts) {
   return nano(url);
 }
 
-function dbName(db){
-    return db.config.db;
+function dbName(db) {
+  return db.config.db;
 }
 
 module.exports = {
