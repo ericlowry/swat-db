@@ -6,12 +6,12 @@ const url = require('url');
 const nano = require('nano');
 
 //
-// db(host, {user, password, path})
+// db(host, {user, password, name})
 //
-// Note: opts tale precedence over host URL
+// Note: options take precedence over host URL settings
 //
 function db(host, opts) {
-  const { protocol: dbProtocol, host: dbHost, auth, path } = host;
+  const { protocol: dbProtocol, host: dbHost, auth, name } = host;
 
   const dbAuth =
     opts.user && opts.password
@@ -20,13 +20,18 @@ function db(host, opts) {
       ? `${auth}@`
       : '';
 
-  const dbPath = opts.path ? `/${opts.path}` : path;
+  const dbName = opts.name ? `/${opts.name}` : path;
 
-  const url = dbProtocol + dbAuth + dbHost + dbPath;
+  const url = dbProtocol + dbAuth + dbHost + dbName;
 
   return nano(url);
 }
 
+function dbName(db){
+    return db.config.db;
+}
+
 module.exports = {
   db,
+  dbName: db => db.config.db,
 };
