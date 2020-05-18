@@ -30,7 +30,8 @@ ensureDB(nano, 'app-data', { partitioned: true }).then(async appDB => {
     { partitioned: true }
   ).then(msg => console.log(`/widgets/_design/WIDGET: ${msg}`));
 
-  await upsert(widgets, {
+  // make sure the foo WIDGET exists...
+  await upsert(appDB, {
     _id: 'WIDGET:foo',
     type: 'WIDGET',
     name: 'foo',
