@@ -71,10 +71,40 @@ function ensureDB(nano, name, opts = { partitioned: false }) {
     });
 }
 
+//
+// async upsert( db, doc[, id] )
+//
+// attempts to insert a document, on document conflict, attempt to create a new version
+//
+const upsert = (db, doc, id) =>
+  // attempt to insert the doucment "as is"
+  db.insert(doc, id).catch(err => {
+    // for anything other than a document conflict...
+    if (err.statusCode !== 409)
+      // ...re-throw the error.
+      throw err;
+
+    // get the document id from the parameter or the document itself
+    const _id = id || doc._id;
+
+    // use the head() function to grab the existing document's etag header
+    return db
+      .head(_id)
+      .then(({ etag }) => {
+        doc._id = _id;
+        doc._rev = etag.replace(/"/g, ''); // strip extraneous '"'s
+        return db.insert(doc);
+      })
+      .catch(err => {
+        throw err; // unexpected error from db.head()
+      });
+  });
+
 module.exports = {
   db,
   dbUrl,
   dbName,
   dbOrigin,
   ensureDB,
+  upsert,
 };
