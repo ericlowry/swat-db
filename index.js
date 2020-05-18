@@ -4,6 +4,7 @@
 
 const assert = require('assert');
 const nano = require('nano');
+const { deepEqual } = require('fast-equals');
 
 //
 // dbUrl(url, {userName, password, dbName}) - construct a couchdb url
@@ -76,9 +77,9 @@ function ensureDB(nano, name, opts = { partitioned: false }) {
 //
 // attempts to insert a document, on document conflict, attempt to create a new version
 //
-const upsert = (db, doc, id) =>
+function upsert(db, doc, id) {
   // attempt to insert the doucment "as is"
-  db.insert(doc, id).catch(err => {
+  return db.insert(doc, id).catch(err => {
     // for anything other than a document conflict...
     if (err.statusCode !== 409)
       // ...re-throw the error.
@@ -99,6 +100,37 @@ const upsert = (db, doc, id) =>
         throw err; // unexpected error from db.head()
       });
   });
+}
+
+//
+// ensureViews() - Ensure that a db view exists
+//
+// note: ensureViews prevents identical views from being rewritten
+//
+function ensureViews(db, name, views, options) {
+  return db
+    .get(`_design/${name}`)
+    .catch(() => ({
+      language: 'javascript',
+      options,
+    })) // doesn't exist, start with defaults
+    .then(doc => {
+      if (deepEqual(doc.views, views) && deepEqual(doc.options, options)) {
+        return 'unchanged';
+      } else {
+        return db
+          .insert(
+            {
+              ...doc,
+              views,
+              options,
+            },
+            `_design/${name}`
+          )
+          .then(() => 'updated');
+      }
+    });
+}
 
 module.exports = {
   db,
@@ -107,4 +139,5 @@ module.exports = {
   dbOrigin,
   ensureDB,
   upsert,
+  ensureViews,
 };

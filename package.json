@@ -1,6 +1,6 @@
 {
   "name": "swat-db",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "CouchDB nano database interface for SWAT based applications",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/ericlowry/swat-db#readme",
   "dependencies": {
+    "fast-equals": "^2.0.0",
     "nano": "^8.2.2"
   }
 }
